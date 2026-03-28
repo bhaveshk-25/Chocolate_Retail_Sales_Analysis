@@ -65,29 +65,34 @@ ORDER BY order_month;
 
 ---- 1.Top 10 revenue generating products
 
-WITH top_products AS ( 
+WITH product_revenue AS ( 
 		SELECT s.product_id, 
 	  		   p.product_name, 
 	   		   ROUND(SUM(s.revenue)) as revenue_generated,
 			   DENSE_RANK() OVER(ORDER BY SUM(s.revenue) DESC) AS revenue_rank
 			FROM sales s
 			JOIN product_dim p
-			ON s.product_id = p.product_id
+			  ON s.product_id = p.product_id
 			GROUP BY s.product_id, p.product_name
 )
 SELECT product_id, 
 	   product_name,
 	   revenue_generated,
 	   revenue_rank
-FROM top_products
+FROM product_revenue
 WHERE revenue_rank <= 10;
 
--- Insight : 
+/* Insights : - Variants like White Chocolate 80% and Milk Chocolate 50% are leading in revenue with ~$250,000.
+			  - Top 2 products contribute disproportionately to total revenue, indicating a Pareto-like distribution where a small subset drives majority of sales.
+			  - Products labeled with higher cocoa percentages (80%, 90%) appear multiple times in the top 10.
+			  - Dark Chocolate 60% is present but not among the highest earners.
+
+*/
 
 
 ---- 2.Bottom 10 products by revenue
 
-WITH top_products AS ( 
+WITH low_revenue_products AS ( 
 		SELECT s.product_id, 
 	  		   p.product_name, 
 	   		   ROUND(SUM(s.revenue)) as revenue_generated,
@@ -101,17 +106,29 @@ SELECT product_id,
 	   product_name,
 	   revenue_generated,
 	   revenue_rank
-FROM top_products
+FROM low_revenue_products
 WHERE revenue_rank <= 10;
+
+/* Insights : - All bottom 10 products are generating around the same revenue (~120k–125k).
+			  - Low variance in revenue suggests these products have similar demand levels and may not be strong differentiators.
+			  - Multiple Praline variants (70%, 80%, 90%) appear here.
+			  - Even 90% cocoa products (Praline, Dark, Milk) are underperforming here.
+*/
 
 ---- 3.Category-wise revenue
 
 SELECT p.category, ROUND(SUM(s.revenue)) AS revenue
 FROM sales s
-LEFT JOIN product_dim p
+JOIN product_dim p
 ON s.product_id = p.product_id
 GROUP BY p.category
 ORDER BY revenue DESC;
+
+/* Insights : - With ~$6.5M in revenue, Praline outperforms all other categories.
+			  - Praline leads revenue contribution, suggesting strong customer preference and potential for further product expansion in this segment
+              - White (~$6M) and Dark (~$5.5M) are close behind Praline.
+			  - Truffle (~$4M) and Milk (~$3.5M) generate much less revenue compared to the top three.
+*/
 
 ---- 4.Products never sold
 
@@ -121,18 +138,23 @@ LEFT JOIN sales s
 ON p.product_id = s.product_id
 WHERE s.product_id IS NULL;
 
+-- Insights : - All products have recorded at least one sale, indicating a well-performing catalog with no completely inactive SKUs.
 
 -- ===========================
 -- Customer Analysis
 -- ===========================
 
--- 1. Top customers by spending
+-- 1. Top customers by revenue
 
 SELECT customer_id, SUM(revenue) AS total_spending
 FROM sales
 GROUP BY customer_id
-ORDER BY customer_id DESC
+ORDER BY total_spending DESC
 LIMIT 10;
+
+/* Insights : - All top 10 customers spend between ~₹1,095 and ₹1,183.
+              - Because their spending is similar, we can treat them as a distinct segment for personalized marketing.
+*/
 
 
 -- 2. Repeat vs new customers
@@ -155,4 +177,45 @@ SELECT
 FROM cust_type
 GROUP BY customer_type;
 
+-- Insights : - The dataset shows no one-time buyers, which may indicate either strong retention or limited observation window.
+
+
+-- 3. Customer lifetime value (CLV)
+
+WITH customer_metrics AS (
+    SELECT 
+        customer_id,
+        AVG(revenue) AS avg_order_value,
+        COUNT(DISTINCT order_id) AS total_orders,
+        MIN(order_date) AS first_purchase,
+        MAX(order_date) AS last_purchase
+    FROM sales
+    GROUP BY customer_id
+),
+customer_lifespan AS (
+    SELECT 
+        customer_id,
+        EXTRACT(YEAR FROM AGE(MAX(order_date), MIN(order_date))) + 1 AS lifespan_years
+    FROM sales
+    GROUP BY customer_id
+)
+SELECT 
+    cm.customer_id,
+    ROUND(cm.avg_order_value * cm.total_orders / cl.lifespan_years, 2) AS clv
+FROM customer_metrics cm
+JOIN customer_lifespan cl 
+    ON cm.customer_id = cl.customer_id
+ORDER BY clv DESC;
+
+-- Insights : - High CLV customers represent the most valuable segment and should be targeted for retention and upselling strategies.
+
+
+-- 4. Customers who haven’t ordered recently (3 months)
+
+SELECT customer_id, MAX(order_date) AS last_ordered
+FROM sales
+GROUP BY customer_id
+HAVING MAX(order_date) < DATE '2025-01-01' - INTERVAL '3 months';   -- chose '2025-01-01' instead of CURRENT_DATE as data is from 2023-2024
+
+-- Insights : - Customers inactive for over 3 months may be at risk of churn and can be targeted with re-engagement campaigns
 
