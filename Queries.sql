@@ -17,7 +17,7 @@ FROM sales;
 -- Insight : Total revenue generated is $25,486,129 indicating the overall business scale during the selected period.
 
 
----- 2.Total orders --------
+---- 2.Total orders 
 
 SELECT COUNT(DISTINCT(order_id)) AS total_orders
 FROM sales;
@@ -25,7 +25,7 @@ FROM sales;
 -- Insight : A total of 100,000 orders were placed, representing the transaction volume.
 
 
----- 3.Avg order value (AOV) ------
+---- 3.Avg order value (AOV) 
 
 SELECT ROUND(AVG(order_value),1) AS AOV
 FROM ( SELECT SUM(revenue) AS order_value
@@ -36,27 +36,6 @@ FROM ( SELECT SUM(revenue) AS order_value
 -- Insight : The AOV is $25.5, showing how much customers spend per transaction on average.
 
  
----- 4.Daily and Monthly Revenue Trends -----
-
-SELECT order_date, 
-	   ROUND(SUM(revenue)) AS daily_revenue
-FROM sales
-GROUP BY order_date
-ORDER BY order_date DESC;
-
-SELECT DATE(DATE_TRUNC('month', order_date)) AS order_month,
-	   ROUND(SUM(revenue)) AS month_revenue
-FROM sales
-GROUP BY order_month
-ORDER BY order_month;
-
-/*Insight : The monthly revenue trend between Jan 2023 and Dec 2024 shows consistent seasonality, 
-             with revenues averaging around $1M but spiking during key retail months.
-			 Notable peaks in mid-2023 and mid-2024 suggest strong performance during festival or 
-			 promotional periods, while troughs highlight post-season slowdowns. 
-			 Overall, the trajectory indicates steady growth, implying that Amazon-style sales 
-			 strategies are effectively capturing demand during high-traffic months. */
-
 
 -- ===========================
 -- Product Analysis
@@ -140,6 +119,7 @@ WHERE s.product_id IS NULL;
 
 -- Insights : - All products have recorded at least one sale, indicating a well-performing catalog with no completely inactive SKUs.
 
+
 -- ===========================
 -- Customer Analysis
 -- ===========================
@@ -218,4 +198,58 @@ GROUP BY customer_id
 HAVING MAX(order_date) < DATE '2025-01-01' - INTERVAL '3 months';   -- chose '2025-01-01' instead of CURRENT_DATE as data is from 2023-2024
 
 -- Insights : - Customers inactive for over 3 months may be at risk of churn and can be targeted with re-engagement campaigns
+
+
+-- ===========================
+-- Time series analysis
+-- ===========================
+
+-- 1. Monthly revenue trend
+
+SELECT DATE(DATE_TRUNC('month', order_date)) AS order_date,
+	   ROUND(SUM(revenue),1) AS month_revenue
+FROM sales
+WHERE order_date IS NOT NULL
+GROUP BY order_date
+ORDER BY order_date ASC;
+
+/*Insight : The monthly revenue trend between Jan 2023 and Dec 2024 shows consistent seasonality, 
+            with revenues averaging around $1M but spiking during key retail months.
+			Notable peaks in mid-2023 and mid-2024 suggest strong performance during festival or 
+			promotional periods, while troughs highlight post-season slowdowns. 
+			Overall, the trajectory indicates steady growth, implying that Amazon-style sales 
+			strategies are effectively capturing demand during high-traffic months. */
+
+
+-- 2. Weekday vs weekend sales
+
+SELECT 
+  CASE 
+    WHEN EXTRACT(DOW FROM order_date) IN (0,6) THEN 'Weekend'
+    ELSE 'Weekday'
+  END AS day_type,
+  ROUND(SUM(revenue), 2) AS total_revenue
+FROM sales
+GROUP BY day_type;
+
+
+-- Insights : - Weekdays contribute significantly higher revenue than weekends, suggesting that purchasing activity is more concentrated during working days, possibly driven by routine buying behavior or business-related demand.
+			  
+
+-- 3. Running revenue
+
+SELECT order_month,
+	   month_revenue,
+	   SUM(month_revenue) OVER(ORDER BY order_month) AS running_total
+FROM ( SELECT 
+			 DATE(DATE_TRUNC('month', order_date)) AS order_month,
+	   		 ROUND(SUM(revenue)) AS month_revenue
+	   FROM sales
+	   GROUP BY order_month
+) t;
+
+/* Insights : - Each month’s revenue is fairly stable, hovering around $1–1.1M. This indicates predictable sales performance without extreme spikes or dips.
+			  - The running total steadily climbs, crossing $22M by Sep 2024. This confirms consistent revenue accumulation without interruptions.
+			  - Since monthly revenue is stable, the running total grows almost linearly. This makes forecasting future totals easier.
+			  - A steadily rising running total indicates no churn in overall revenue — customers keep buying, and sales are sustained.*/
 
