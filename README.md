@@ -5,7 +5,7 @@
 This project analyzes Amazon-style sales data to uncover business trends, customer behavior, and product performance. The goal is to provide actionable insights for revenue growth, customer retention, and product optimization.
 
 ---
-
+ 
 ## Business Objectives
 
 - **Understand revenue trends**: Identify overall and seasonal revenue patterns.
