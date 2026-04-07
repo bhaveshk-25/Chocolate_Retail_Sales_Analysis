@@ -116,6 +116,8 @@ Based on the insights and findings above, we would recommend the product and mar
 
 - **Bottom-10 products show low, uniform revenue.** Conduct a profitability review to determine whether underperformers should be repositioned, discounted to clear stock, or phased out.
 
+- **Airport stores in UK and Germany are the highest-revenue channel-country combinations.** Prioritize premium SKU availability and seasonal promotions in these locations before expanding other channels.
+
 - **All customers are repeat buyers, forming a strong retention base.** Introduce a formal CLV-based segmentation strategy to tier customers and tailor engagement — prioritize top CLV customers for retention spend.
 
 - **Customers inactive for 3+ months are at churn risk.** Launch targeted re-engagement campaigns (email, personalized discount codes) before they lapse entirely. Use last purchase date as a trigger.
@@ -134,3 +136,4 @@ Throughout the analysis, multiple assumptions were made to manage challenges wit
 - All customers in the dataset are classified as repeat buyers. This may reflect a limited observation window rather than true 100% retention — further cohort analysis with acquisition dates is recommended to validate.
 - Revenue figures are assumed to already account for discounts applied at the transaction level. The `revenue` column is used as the primary metric throughout.
 - The 100,000 order count is a round number; it is unclear whether this represents the complete transaction history or a sampled extract. Results should be interpreted accordingly.
+- AOV is nearly identical across all store types and countries ($25.3–$25.6), which is statistically improbable in real retail data and further confirms the synthetic nature of this dataset.
