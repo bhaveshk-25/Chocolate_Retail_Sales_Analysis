@@ -30,6 +30,8 @@ The database consists of five tables with a total of **100,000 order records**. 
 ![Entity Relationship Diagram](./Schema/Database.png)
 
 ---
+### **Note: This project uses a synthetic Amazon sales dataset created for educational and portfolio purposes. It does not represent actual company data.**
+---
 
 ## Executive Summary
 
