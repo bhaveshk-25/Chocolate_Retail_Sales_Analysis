@@ -27,7 +27,7 @@ The database consists of five tables with a total of **100,000 order records**. 
 - **store_dim:** Store dimension with `store_id`, `store_name`, `city`, `country`, and `store_type`
 - **date_dim:** Date dimension with `date`, `year`, `month`, `day`, `week`, and `day_of_week`
 
-![Entity Relationship Diagram](.Schema/Database.png)
+![Entity Relationship Diagram](./Schema/Database.png)
 
 ---
 
