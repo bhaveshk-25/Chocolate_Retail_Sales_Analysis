@@ -8,34 +8,25 @@
 -- Basic Business Metrics
 -- ===========================
 
-
--- 1.Total Revenue 
-
-SELECT ROUND(SUM(revenue)) AS total_revenue
-FROM sales;
-
--- Insight : Total revenue generated is $25,486,129 indicating the overall business scale during the selected period.
-
-
----- 2.Total orders 
-
-SELECT COUNT(DISTINCT(order_id)) AS total_orders
-FROM sales;
-
--- Insight : A total of 100,000 orders were placed, representing the transaction volume.
+SELECT
+    COUNT(DISTINCT s.customer_id)                        AS total_customers,
+    ROUND(SUM(s.revenue))                                AS total_revenue,
+    ROUND(AVG(order_totals.order_value), 2)              AS avg_order_value,
+    COUNT(DISTINCT s.order_id)                           AS total_orders,
+    ROUND(COUNT(DISTINCT s.order_id)
+          / COUNT(DISTINCT s.customer_id), 1)            AS avg_orders_per_customer
+FROM sales s
+JOIN (
+    SELECT order_id, SUM(revenue) AS order_value
+    FROM sales GROUP BY order_id
+) order_totals ON s.order_id = order_totals.order_id;
 
 
----- 3.Avg order value (AOV) 
+/* Insights : - Total revenue generated is $25,486,129 indicating the overall business scale during the selected period.
+              - A total of 100,000 orders were placed, representing the transaction volume.
+              - The AOV is $25.5, showing how much customers spend per transaction on average.*/
 
-SELECT ROUND(AVG(order_value),1) AS AOV
-FROM ( SELECT SUM(revenue) AS order_value
-		FROM sales
-		GROUP BY order_id 
-);
 
--- Insight : The AOV is $25.5, showing how much customers spend per transaction on average.
-
- 
 
 -- ===========================
 -- Product Analysis
@@ -172,13 +163,16 @@ WITH customer_metrics AS (
     FROM sales
     GROUP BY customer_id
 ),
+
 customer_lifespan AS (
     SELECT 
         customer_id,
-        EXTRACT(YEAR FROM AGE(MAX(order_date), MIN(order_date))) + 1 AS lifespan_years
+        GREATEST( EXTRACT(DAY FROM AGE(MAX(order_date), MIN(order_date))) / 365,0.5 ) AS lifespan_years
+		-- minimum 6-month floor to avoid division by near-zero
     FROM sales
     GROUP BY customer_id
 )
+
 SELECT 
     cm.customer_id,
     ROUND(cm.avg_order_value * cm.total_orders / cl.lifespan_years, 2) AS clv
@@ -198,6 +192,36 @@ GROUP BY customer_id
 HAVING MAX(order_date) < DATE '2025-01-01' - INTERVAL '3 months';   -- chose '2025-01-01' instead of CURRENT_DATE as data is from 2023-2024
 
 -- Insights : - Customers inactive for over 3 months may be at risk of churn and can be targeted with re-engagement campaigns
+
+
+-- 5. Revenue by gender and loyalty membership
+
+SELECT c.gender,
+       c.loyalty_m,
+       ROUND(SUM(s.revenue)) AS revenue,
+       COUNT(DISTINCT s.customer_id) AS customers
+FROM sales s
+JOIN customer_dim c ON s.customer_id = c.customer_id
+GROUP BY c.gender, c.loyalty_m
+ORDER BY revenue DESC;
+
+
+-- 6. Age group segmentation
+
+SELECT
+    CASE
+        WHEN c.age BETWEEN 18 AND 25 THEN '18–25'
+        WHEN c.age BETWEEN 26 AND 35 THEN '26–35'
+        WHEN c.age BETWEEN 36 AND 50 THEN '36–50'
+        ELSE '50+'
+    END AS age_group,
+    ROUND(SUM(s.revenue)) AS revenue,
+    ROUND(AVG(s.revenue), 2) AS avg_order_value
+FROM sales s
+JOIN customer_dim c ON s.customer_id = c.customer_id
+GROUP BY age_group
+ORDER BY revenue DESC;
+
 
 
 -- ===========================
@@ -254,4 +278,32 @@ FROM ( SELECT
 			  - A steadily rising running total indicates no churn in overall revenue — customers keep buying, and sales are sustained.*/
 
 
+
+-- ===========================
+-- Store level analysis
+-- ===========================
+
+-- 1. Revenue by store type and country
+
+SELECT st.store_type,
+       st.country,
+       ROUND(SUM(s.revenue)) AS revenue,
+       COUNT(DISTINCT s.order_id) AS orders,
+       ROUND(AVG(s.revenue), 2) AS aov
+FROM sales s
+JOIN store_dim st ON s.store_id = st.store_id
+GROUP BY st.store_type, st.country
+ORDER BY revenue DESC;
+
+/* Insights : - Airport stores punch above their weight. Airport (UK) and Airport (Germany) are the top 2 revenue-generating combinations in the entire dataset.
+			    This channel deserves prioritized stocking and premium product placement.
+			  - AOV is suspiciously uniform across all store types and countries (~$25.3–$25.6).
+			  - Online underperforms relative to its potential. Online Canada ($1.78M) and Online USA ($1.54M) rank 3rd and 4th, but Online France, UK, and Australia trail 
+			    significantly — sitting at roughly half the revenue of their Mall and Airport counterparts in the same countries. 
+				This suggests either lower online penetration in those markets or a distribution/marketing gap worth investigating.
+			  - Retail is the weakest channel across all countries. Every Retail entry sits in the bottom half of the table. 
+			    Retail France ($1.02M), Retail USA ($1.02M), Retail Germany ($761K), and Retail Canada ($509K) are all outperformed by Mall and Airport equivalents in the same country.
+			  - UK and Germany are the strongest markets overall. Airport UK ($2.27M) and Airport Germany ($2.04M) lead the entire dataset. 
+			    Combined with Mall UK ($1.28M) and Retail Germany ($761K), both countries generate strong multi-channel revenue. 
+				These are the markets to protect and grow first.*/	
 
