@@ -53,7 +53,9 @@ FROM product_revenue
 WHERE revenue_rank <= 10;
 
 /* Insights : - Variants like White Chocolate 80% and Milk Chocolate 50% are leading in revenue with ~$250,000.
-			  - Top 2 products contribute disproportionately to total revenue, indicating a Pareto-like distribution where a small subset drives majority of sales.
+			  - Two SKUs account for roughly 2% of catalog yet generate outsized revenue — this concentration creates supply chain risk. 
+			    If either product faces a stockout, the business has no immediate revenue substitute. 
+				Recommendation : develop 2–3 backup SKUs in the White and Milk category to reduce dependency.
 			  - Products labeled with higher cocoa percentages (80%, 90%) appear multiple times in the top 10.
 			  - Dark Chocolate 60% is present but not among the highest earners.
 
