@@ -1,8 +1,8 @@
-# Amazon Chocolate Sales Analysis
+# Chocolate Retail Sales Analysis — Multi-Channel & Customer Insights (2023–2024)
 
 ## Project Background
 
-This project analyzes sales data for a chocolate retail business operating on Amazon, covering the period **2023–2024**. The company sells a diverse catalog of chocolate products across multiple categories — including Dark, Milk, White, Praline, and Truffle — distributed through various store types globally.
+This project analyzes sales data for a chocolate retail business, covering the period **2023–2024**. The company sells a diverse catalog of chocolate products across multiple categories — including Dark, Milk, White, Praline, and Truffle — distributed through various store types globally.
 
 As a data analyst working with this business, the goal is to uncover revenue trends, evaluate product performance, understand customer behavior, and identify actionable growth opportunities.
 
