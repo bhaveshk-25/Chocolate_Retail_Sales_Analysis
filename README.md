@@ -143,3 +143,4 @@ Throughout the analysis, multiple assumptions were made to manage challenges wit
 - Revenue figures are assumed to already account for discounts applied at the transaction level. The `revenue` column is used as the primary metric throughout.
 - The 100,000 order count is a round number; it is unclear whether this represents the complete transaction history or a sampled extract. Results should be interpreted accordingly.
 - AOV is nearly identical across all store types and countries ($25.3–$25.6), which is statistically improbable in real retail data and further confirms the synthetic nature of this dataset.
+- Gender and loyalty membership show near-zero revenue variance across segments, which is inconsistent with real customer behavior and reflects the synthetic data generation process.
