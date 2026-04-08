@@ -130,6 +130,8 @@ Based on the insights and findings above, we would recommend the product and mar
 
 - **AOV at $25.5 is relatively low.** Introduce bundle deals, minimum spend thresholds for free shipping, or "frequently bought together" recommendations to increase basket size per transaction.
 
+- **The 18–25 segment is significantly underpenetrated relative to older cohorts.** Consider targeted social media campaigns, smaller pack sizes, or entry-level price points to capture younger buyers — a segment that compounds in value over time as they age into higher-spending brackets.
+
 - **Weekday revenue dominates.** Concentrate ad spend, flash sales, and campaign launches on weekdays for maximum impact; explore weekend-specific promotions to smooth the revenue curve.
 
 ---
