@@ -67,6 +67,10 @@ The business generated **$25.5M in total revenue** across 100,000 orders during 
 
 - **Customers inactive for 3+ months** (last order before October 2024) represent a churn risk pool. These individuals can be targeted with re-engagement campaigns such as personalized discounts or product recommendations.
 
+- **Gender and loyalty membership show no meaningful revenue differentiation** — all four segments generate between $6.3M and $6.5M with near-identical customer counts (~12,400–12,700). This uniformity is consistent with the synthetic nature of the dataset and suggests the data was generated without segment-level revenue skew.
+
+- **Loyalty membership provides no observable revenue lift in this dataset.** In a real business, loyalty members typically show 20–40% higher AOV or purchase frequency — the absence of this pattern here is a notable limitation for drawing actionable conclusions from the loyalty dimension.
+
 ---
 
 ### Time Series Trends
